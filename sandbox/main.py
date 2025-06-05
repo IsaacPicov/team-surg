@@ -62,7 +62,7 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
          
         
     trainer = Trainer(devices=devices,
-                      accelerator=accelerator,
+                      accelerator=accelerator, 
                       precision="bf16-mixed",
                       logger=logger,
                       callbacks=[get_early_stop_callback(patience),
@@ -71,7 +71,6 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
                       gradient_clip_val=gradient_clip_val,
                       limit_train_batches=limit_train_batches,
                       max_epochs=max_epochs,
-                    #   num_sanity_val_steps=0,
                       )
     trainer.fit(task)
     test(exp_dir_path=exp_dir_path) 

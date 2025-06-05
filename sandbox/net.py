@@ -99,7 +99,9 @@ class GNNModel(nn.Module):
                 nn.Dropout(dp_rate),
             ]
             in_channels = c_hidden
-        self.classifier = nn.Linear(c_hidden, c_out) #Embedding
+        self.mlp_layer1 =  nn.Linear(c_hidden, 64)
+        self.mlp_layer2 = nn.Linear(64, 32) #Embedding
+        self.classifier = nn.Linear(32, 3)
         self.pooling = geom_nn.global_mean_pool
         self.layers = nn.ModuleList(layers)
         
@@ -125,7 +127,9 @@ class GNNModel(nn.Module):
             else:
                 x = layer(x)
         x = self.pooling(x, batch)
-        return self.classifier(x)
+        x = self.mlp_layer1(x)
+        x=self.mlp_layer2(x)
+        return self.mlp_layer3(x)
 
 def gnn_sandbox_function():
     model = GNNModel() 
