@@ -167,34 +167,49 @@ class GATModel(nn.Module):
         in_channels, out_channels = c_in, c_hidden
         layers = []
         if split:
-            heads = split_2 
-            first_layers = int(num_layers * split_ratio)
-            second_layers = num_layers - first_layers
-            for l_idx in range(first_layers):
-                layers += [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = split_1, concat = True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-                in_channels = c_hidden
-            for l_idx in range(second_layers - 1):
-                [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = split_2, concat = True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-        else:    
-            for l_idx in range(num_layers - 1):
-                layers += [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-                in_channels = c_hidden
-        layers += [gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = False),
+    heads = split_2 
+    first_layers = int(num_layers * split_ratio)
+    second_layers = num_layers - first_layers
+
+    # First block (uses split_1 heads)
+    for l_idx in range(first_layers):
+        layers += [
+            gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=split_1, concat=True),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dp_rate),
+        ]
+        in_channels = out_channels * split_1
+
+    # Second block (uses split_2 heads)
+    for l_idx in range(second_layers - 1):
+        layers += [  # ← was missing
+            gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=split_2, concat=True),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dp_rate),
+        ]
+        in_channels = out_channels * split_2
+
+    # Final GAT layer with concat=False
+    layers += [
+        gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=False),
+        nn.ReLU(inplace=True),
+        nn.Dropout(dp_rate),
+    ]
+
+    else:
+        for l_idx in range(num_layers - 1):
+            layers += [
+                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=True),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
-                ]
+            ]
+            in_channels = out_channels * heads
+
+        layers += [
+            gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=False),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dp_rate),
+        ]
         
         MLP_layers = []
         for l_idx in range(num_MLP_layers - 1):
