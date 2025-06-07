@@ -140,7 +140,7 @@ class GATModel(nn.Module):
         layer_name="GAT",
         dp_rate=0.1,
         heads = 8, 
-        MLP_layers = 3
+        MLP_layers = 3,
         batch = None,
         **kwargs,
     ):
