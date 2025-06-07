@@ -186,6 +186,7 @@ class GATModel(nn.Module):
         
         self.layers = nn.ModuleList(layers)
         self.MLP_layers = nn.ModuleList(MLP_layers)
+        self.pooling = geom_nn.global_mean_pool
 
     def forward(self, x, edge_index, edge_attr = None, batch = None):
         """Forward.
