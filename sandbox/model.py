@@ -402,7 +402,7 @@ class GATTask(pl.LightningModule):
                               attn_heads = self.attn_heads, MLP_layers = self.MLP_layers)
         self.loss = nn.CrossEntropyLoss()
         
-    def forward(self, x, edge_index, edge_attr=None, batch):
+    def forward(self, x, edge_index, edge_attr=None, batch = None):
        return self.model(x, edge_index, edge_attr, batch)
    
     def training_step(self, batch, batch_nb):
