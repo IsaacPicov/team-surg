@@ -95,33 +95,33 @@ class GNNDataset(Dataset):
 
     @staticmethod
     def build_weighted_edge_list(joint_list, spatial_edges, num_frames = 150):
-    joint_idx = {name: i for i, name in enumerate(joint_list)}
-    N = len(joint_list)
-    total_nodes = N * num_frames
-    edge_weights = torch.tensor([], dtype=torch.long)
-    
-    rows, cols = [], []
-    
-    for t in range(num_frames):
-        offset = t * N
-
-        for a, b in spatial_edges:
-            i, j = joint_idx[a] + offset, joint_idx[b] + offset
-            rows += [i, j]
-            cols += [j, i]
-            add_weights = torch.tensor([[1,0], [1,0]])
-            edge_weights = torch.cat([edge_weights, add_weights], dim=0)
-            
+        joint_idx = {name: i for i, name in enumerate(joint_list)}
+        N = len(joint_list)
+        total_nodes = N * num_frames
+        edge_weights = torch.tensor([], dtype=torch.long)
         
-        if t < num_frames - 1:
-            next_offset = (t + 1) * N
-            for i in range(N):
-                rows += [offset + i, next_offset + i]
-                cols += [next_offset + i, offset + i]
-                add_weights = torch.tensor([[0,1], [0,1]])
+        rows, cols = [], []
+        
+        for t in range(num_frames):
+            offset = t * N
+
+            for a, b in spatial_edges:
+                i, j = joint_idx[a] + offset, joint_idx[b] + offset
+                rows += [i, j]
+                cols += [j, i]
+                add_weights = torch.tensor([[1,0], [1,0]])
                 edge_weights = torch.cat([edge_weights, add_weights], dim=0)
+                
             
-    return torch.tensor([rows, cols], dtype= torch.long), edge_weights
+            if t < num_frames - 1:
+                next_offset = (t + 1) * N
+                for i in range(N):
+                    rows += [offset + i, next_offset + i]
+                    cols += [next_offset + i, offset + i]
+                    add_weights = torch.tensor([[0,1], [0,1]])
+                    edge_weights = torch.cat([edge_weights, add_weights], dim=0)
+                
+        return torch.tensor([rows, cols], dtype= torch.long), edge_weights
 
     @staticmethod
     def build_node_list(exclude_groups : List, frames: np.array) -> torch.Tensor:
