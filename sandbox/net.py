@@ -142,6 +142,10 @@ class GATModel(nn.Module):
         heads = 8, 
         num_MLP_layers = 3,
         batch = None,
+        split = False, 
+        split_1 = 5,
+        split_2 = 3,
+        split_ratio = 1/4,
         **kwargs,
     ):
         """GNNModel.
@@ -160,19 +164,37 @@ class GATModel(nn.Module):
         gnn_layer = gnn_layer_by_name[layer_name]
         heads = kwargs.pop("attn_heads", 1)
         
-        layers = []
         in_channels, out_channels = c_in, c_hidden
-        for l_idx in range(num_layers - 1):
-            layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True),
+        layers = []
+        if split:
+            heads = split_2 
+            first_layers = int(num_layers * split_ratio)
+            second_layers = num_layers - first_layers
+            for l_idx in range(first_layers):
+                layers += [
+                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = split_1, concat = True),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(dp_rate),
+                ]
+                in_channels = c_hidden
+            for l_idx in range(second_layers - 1):
+                [
+                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = split_2, concat = True),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(dp_rate),
+                ]
+        else:    
+            for l_idx in range(num_layers - 1):
+                layers += [
+                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(dp_rate),
+                ]
+                in_channels = c_hidden
+        layers += [gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = False),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
-            ]
-            in_channels = c_hidden
-        layers += [gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = False),
-                   nn.ReLU(inplace=True),
-                   nn.Dropout(dp_rate),
-                   ]
+                ]
         
         MLP_layers = []
         for l_idx in range(num_MLP_layers - 1):

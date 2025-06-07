@@ -46,7 +46,11 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           num_frames = 150, 
           exclude_groups = [],
           num_workers = 4, 
-          pin_memory= True, 
+          pin_memory= True,
+          split = False, 
+          split_1 = 5, 
+          split_2 = 3,
+          split_ratio = 1/4
           ):  
    
    

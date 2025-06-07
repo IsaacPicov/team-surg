@@ -184,6 +184,11 @@ class GNNTask(pl.LightningModule):
         self.num_layers = self.hparams.get('num_layers', 5)
         self.layer_name = self.hparams.get('layer_name', 'GCN')
         self.dp_rate = self.hparams.get('dp_rate', 0.1)
+        self.split = self.hparams.get("split", False)
+        self.split_1 = self.hparams.get("split_1", 5)
+        self.split_2 = self.hparams.get("split_2", 3)
+        self.split_ratio = self.hparams.get("split_ratio", 1/4)
+        
         
         #Dataset kwargs
         self.num_frames = self.hparams.get("num_frames", 150)
@@ -198,8 +203,9 @@ class GNNTask(pl.LightningModule):
         #Training kwargs
         self.model = GNNModel(c_in=self.c_in, c_hidden=self.c_hidden, c_out=self.num_classes, 
                               num_layers=self.num_layers, layer_name=self.layer_name, dp_rate=self.dp_rate, 
-                              attn_heads = self.attn_heads) #additional kwarg
+                              attn_heads = self.attn_heads, self.split, self.split_1, self.split_2, self.split_ratio) #additional kwarg
         self.loss = nn.CrossEntropyLoss()
+        
         
     def forward(self, x, edge_index, batch):
        return self.model(x, edge_index, batch)
