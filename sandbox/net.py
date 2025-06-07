@@ -176,8 +176,8 @@ class GATModel(nn.Module):
         MLP_layers = []
         in_channel = c_hidden
         for l_idx in range(num_MLP_layers - 1):
-            MLP_layers += [nn.Linear(in_channel, in_channel/2)]
-            in_channel /= 2
+            MLP_layers += [nn.Linear(in_channel, in_channel//2)]
+            in_channel //= 2
             MLP_layers += [
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
