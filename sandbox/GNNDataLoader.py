@@ -19,12 +19,14 @@ class GNNDataset(Dataset):
         dataset_path: str, 
         split: str, 
         exclude_groups: List[str] =[], 
+        has_temporal_weights = False,
         num_frames: int = 150
     ):
         super().__init__()
         self.dataset = read_pickle(dataset_path)[split]
         self.exclude_groups = exclude_groups
         self.num_frames = num_frames
+        self.temporal_weights = has_temporal_weights
     
     
     def __len__(self) -> int:
@@ -32,8 +34,12 @@ class GNNDataset(Dataset):
     
     
     def __getitem__(self, idx: int) -> Data:
-        x, edge_list, y = self.prepare_dataset(idx)
-        return Data(x=x, edge_index=edge_list, y=y)
+        if not self.temporal_weights:
+            x, edge_index, y = self.prepare_dataset(idx)
+            return Data(x=x, edge_index=edge_index, y=y)
+        
+        x, edge_index, edge_attr, y = self.prepare_dataset_temporal_weight(idx)
+        return Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
         
     @staticmethod
     def reshape_joints(input_array: np.array) -> np.array:
@@ -88,6 +94,36 @@ class GNNDataset(Dataset):
 
 
     @staticmethod
+    def build_weighted_edge_list(joint_list, spatial_edges, num_frames = 150):
+    joint_idx = {name: i for i, name in enumerate(joint_list)}
+    N = len(joint_list)
+    total_nodes = N * num_frames
+    edge_weights = torch.tensor([], dtype=torch.long)
+    
+    rows, cols = [], []
+    
+    for t in range(num_frames):
+        offset = t * N
+
+        for a, b in spatial_edges:
+            i, j = joint_idx[a] + offset, joint_idx[b] + offset
+            rows += [i, j]
+            cols += [j, i]
+            add_weights = torch.tensor([[1,0], [1,0]])
+            edge_weights = torch.cat([edge_weights, add_weights], dim=0)
+            
+        
+        if t < num_frames - 1:
+            next_offset = (t + 1) * N
+            for i in range(N):
+                rows += [offset + i, next_offset + i]
+                cols += [next_offset + i, offset + i]
+                add_weights = torch.tensor([[0,1], [0,1]])
+                edge_weights = torch.cat([edge_weights, add_weights], dim=0)
+            
+    return torch.tensor([rows, cols], dtype= torch.long), edge_weights
+
+    @staticmethod
     def build_node_list(exclude_groups : List, frames: np.array) -> torch.Tensor:
         joints_list = GNNDataset.get_filtered_joint_list(exclude_groups)
         joint_indices = [MAIN_JOINTS.index(joint) for joint in joints_list]
@@ -104,5 +140,14 @@ class GNNDataset(Dataset):
         x = GNNDataset.build_node_list(self.exclude_groups, frames[0]) #numpy array
         y = torch.tensor(frames[-2], dtype=torch.long) #action label 
         return x, edge_list, y
+    
+    def prepare_dataset_temporal_weight(self, idx: int) -> Tuple[torch.Tensor,torch.Tensor, float]:
+        frames = self.dataset[idx]
+        filtered_joint_list = GNNDataset.get_filtered_joint_list(self.exclude_groups)
+        filtered_edges = GNNDataset.filter_edges(filtered_joint_list)
+        edge_list, edge_features = GNNDataset.build_weighted_edge_list(filtered_joint_list, filtered_edges, self.num_frames)
+        x = GNNDataset.build_node_list(self.exclude_groups, frames[0]) #numpy array
+        y = torch.tensor(frames[-2], dtype=torch.long) #action label 
+        return x, edge_list, edge_features, y
 
 

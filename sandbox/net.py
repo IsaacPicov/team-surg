@@ -91,8 +91,7 @@ class GNNModel(nn.Module):
         in_channels, out_channels = c_in, c_hidden
         for l_idx in range(num_layers - 1):
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads) 
-                if layer_name == 'GAT' else gnn_layer(in_channels=in_channels, out_channels=out_channels)
+                gnn_layer(in_channels=in_channels, out_channels=out_channels) 
             ]
             layers += [
                 nn.ReLU(inplace=True),
@@ -131,15 +130,89 @@ class GNNModel(nn.Module):
         x=self.mlp_layer2(x)
         return self.mlp_layer3(x)
 
-def gnn_sandbox_function():
-    model = GNNModel() 
-    input = torch.rand((28, 3))
-    edge_matrix = torch.tensor([
-        [0, 1, 1, 2],  # Source nodes
-        [1, 0, 2, 1]   # Target nodes
-    ])
-    output = model(input) 
-    breakpoint() 
+class GATModel(nn.Module):
+    def __init__(
+        self,
+        c_in=3,
+        c_hidden=128,
+        c_out=3,
+        num_layers=5,
+        layer_name="GAT",
+        dp_rate=0.1,
+        heads = 8, 
+        MLP_layers = 3
+        batch = None,
+        **kwargs,
+    ):
+        """GNNModel.
+
+        Args:
+            c_in: Dimension of input features
+            c_hidden: Dimension of hidden features
+            c_out: Dimension of the output features. Usually number of classes in classification
+            num_layers: Number of "hidden" graph layers
+            layer_name: String of the graph layer to use
+            dp_rate: Dropout rate to apply throughout the network
+            kwargs: Additional arguments for the graph layer (e.g. number of heads for GAT)
+
+        """
+        super().__init__()
+        gnn_layer = gnn_layer_by_name[layer_name]
+        heads = kwargs.pop("attn_heads", 1)
+        
+        layers = []
+        in_channels, out_channels = c_in, c_hidden
+        for l_idx in range(num_layers - 1):
+            layers += [
+                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True) 
+                nn.ReLU(inplace=True),
+                nn.Dropout(dp_rate),
+            ]
+        layers += [gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = False),
+                   nn.ReLU(inplace=True),
+                   nn.Dropout(dp_rate),
+                   ]
+        
+        MLP_layers = []
+        in_channel = c_hidden
+        for l_idx in range(MLP_layers - 1):
+            MLP_layers += [nn.Linear(in_channel, in_channel/2)]
+            in_channel /= 2
+            MLP_layers += [
+                nn.ReLU(inplace=True),
+                nn.Dropout(dp_rate),
+            ]
+        MLP_layers += [nn.Linear(in_channels,3)]
+        
+        self.layers = nn.ModuleList(layers)
+        self.MLP_layers = nn.ModuleList(MLP_layers)
+
+    def forward(self, x, edge_index, edge_attr = None, batch = None):
+        """Forward.
+
+        Args:
+            x: Input features per node
+            edge_index: List of vertex index pairs representing the edges in the graph (PyTorch geometric notation)
+            edge_attr: list of edge weights 
+
+        """
+        if batch is None:
+            batch = torch.zeros(x.size(0), dtype=torch.float32, device=x.device) #try bfloat16
+            
+        
+        for layer in self.layers:
+            # For graph layers, we need to add the "edge_index" tensor as additional input
+            # All PyTorch Geometric graph layer inherit the class "MessagePassing", hence
+            # we can simply check the class type.
+            if isinstance(layer, geom_nn.MessagePassing):
+                x = layer(x=x, edge_index=edge_index, edge_attr=edge_attr)
+            else:
+                x = layer(x)
+        x = self.pooling(x, batch)
+        for layer in self.MLP_layers:
+            x = layer(x)
+            
+        return x
 
 def named_apply(
         fn: Callable,

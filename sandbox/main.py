@@ -28,7 +28,7 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           limit_train_batches=1.0,
           tb_path=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "isaacpicov" / "baseline" / "experiments" / "simulation" / "gnn_results" / "tb"), 
           loss_fn="BCE",
-          learn_rate=1e-4,
+          learn_rate=1e-3,
           batch_size=32,
           optimizer="Adam",
           dataset_path="action_dataset_joints_leg_sampled_150.pkl", 
@@ -38,14 +38,15 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           oversample=False,  
           c_in = 3,
           c_hidden = 128, 
+          has_temporal_weights = self.has_temporal_weights,
           attn_heads = 1, 
           num_layers = 5, 
-          layer_name = 'GCN', 
+          layer_name = 'GAT', 
           num_frames = 150, 
           exclude_groups = [],
           num_workers = 4, 
-          pin_memory= True
-          ): 
+          pin_memory= True, 
+          ):  
    
    
     """
