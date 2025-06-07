@@ -182,7 +182,7 @@ class GATModel(nn.Module):
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
             ]
-        MLP_layers += [nn.Linear(in_channels,3)]
+        MLP_layers += [nn.Linear(in_channel ,3)]
         
         self.layers = nn.ModuleList(layers)
         self.MLP_layers = nn.ModuleList(MLP_layers)
