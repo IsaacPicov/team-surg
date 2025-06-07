@@ -91,7 +91,7 @@ class GNNModel(nn.Module):
         in_channels, out_channels = c_in, c_hidden
         for l_idx in range(num_layers - 1):
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels) 
+                gnn_layer(in_channels=in_channels, out_channels=out_channels)
             ]
             layers += [
                 nn.ReLU(inplace=True),
@@ -164,7 +164,7 @@ class GATModel(nn.Module):
         in_channels, out_channels = c_in, c_hidden
         for l_idx in range(num_layers - 1):
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True) 
+                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads = heads, concat = True),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
             ]
