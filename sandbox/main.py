@@ -41,6 +41,7 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           has_temporal_weights = True,
           attn_heads = 1, 
           num_layers = 5, 
+          num_MLP_layers = 3,
           layer_name = 'GAT', 
           num_frames = 150, 
           exclude_groups = [],

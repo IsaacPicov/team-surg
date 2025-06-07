@@ -384,7 +384,7 @@ class GATTask(pl.LightningModule):
         self.layer_name = self.hparams.get('layer_name', 'GAT')
         self.dp_rate = self.hparams.get('dp_rate', 0.1)
         self.has_temporal_weights = self.hparams.get('has_temporal_weights', False)
-        self.MLP_layers = self.hparams.get("MLP_layers", 3)
+        self.num_MLP_layers = self.hparams.get("num_MLP_layers", 3)
         
         #Dataset kwargs
         self.num_frames = self.hparams.get("num_frames", 150)
@@ -399,7 +399,7 @@ class GATTask(pl.LightningModule):
         #Training kwargs
         self.model = GATModel(c_in=self.c_in, c_hidden=self.c_hidden, c_out=self.num_classes, 
                               num_layers=self.num_layers, layer_name=self.layer_name, dp_rate=self.dp_rate, 
-                              attn_heads = self.attn_heads, MLP_layers = self.MLP_layers)
+                              attn_heads = self.attn_heads, num_MLP_layers = self.num_MLP_layers)
         self.loss = nn.CrossEntropyLoss()
         
     def forward(self, x, edge_index, edge_attr=None, batch = None):

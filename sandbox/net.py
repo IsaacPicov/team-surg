@@ -140,7 +140,7 @@ class GATModel(nn.Module):
         layer_name="GAT",
         dp_rate=0.1,
         heads = 8, 
-        MLP_layers = 3,
+        num_MLP_layers = 3,
         batch = None,
         **kwargs,
     ):
@@ -175,7 +175,7 @@ class GATModel(nn.Module):
         
         MLP_layers = []
         in_channel = c_hidden
-        for l_idx in range(MLP_layers - 1):
+        for l_idx in range(num_MLP_layers - 1):
             MLP_layers += [nn.Linear(in_channel, in_channel/2)]
             in_channel /= 2
             MLP_layers += [
