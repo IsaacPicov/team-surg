@@ -203,7 +203,7 @@ class GNNTask(pl.LightningModule):
         #Training kwargs
         self.model = GNNModel(c_in=self.c_in, c_hidden=self.c_hidden, c_out=self.num_classes, 
                               num_layers=self.num_layers, layer_name=self.layer_name, dp_rate=self.dp_rate, 
-                              attn_heads = self.attn_heads, self.split, self.split_1, self.split_2, self.split_ratio) #additional kwarg
+                              attn_heads = self.attn_heads, split=self.split, split_1=self.split_1, split_2=self.split_2, split_ratio=self.split_ratio) #additional kwarg
         self.loss = nn.CrossEntropyLoss()
         
         
