@@ -195,20 +195,20 @@ class GATModel(nn.Module):
                 nn.Dropout(dp_rate),
             ]
 
-    else:
-        for l_idx in range(num_layers - 1):
+         else:
+            for l_idx in range(num_layers - 1):
+                layers += [
+                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=True),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(dp_rate),
+                ]
+
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=True),
+                gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=False),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
             ]
-
-        layers += [
-            gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=False),
-            nn.ReLU(inplace=True),
-            nn.Dropout(dp_rate),
-        ]
-        
+            
         MLP_layers = []
         for l_idx in range(num_MLP_layers - 1):
             MLP_layers += [nn.Linear(c_hidden, c_hidden//2)]
