@@ -128,7 +128,7 @@ class GNNModel(nn.Module):
         x = self.pooling(x, batch)
         x = self.mlp_layer1(x)
         x=self.mlp_layer2(x)
-        return self.mlp_layer3(x)
+        return self.mlp_layer3(x) 
 
 class GATModel(nn.Module):
     def __init__(
@@ -195,7 +195,7 @@ class GATModel(nn.Module):
                 nn.Dropout(dp_rate),
             ]
 
-         else:
+        else:
             for l_idx in range(num_layers - 1):
                 layers += [
                     gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=True),
@@ -244,7 +244,7 @@ class GATModel(nn.Module):
                 x = layer(x=x, edge_index=edge_index, edge_attr=edge_attr)
             else:
                 x = layer(x)
-        x = self.pooling(x, batch)
+        x = self.pooling(x, batch) #type: ignore
         
         for layer in self.MLP_layers:
             x = layer(x)
