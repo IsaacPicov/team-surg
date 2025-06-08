@@ -11,50 +11,48 @@ echo "=== Running One-Factor-at-a-Time Ablations ==="
 
 # Attention Heads
 for HEADS in 2 4 8; do
-    for LAYERS in 5, 9; do
-        python3 main.py train $BASE_FLAGS --exp_name "abl_heads_${HEADS} layers_${LAYERS}" --has_temporal_weights True --attn_heads $HEADS --num_layers $LAYERS --split False
-    done
+        python3 main.py train $BASE_FLAGS --exp_name "abl_heads_${HEADS} layers_5" --has_temporal_weights True --attn_heads $HEADS --num_layers 5 --split False
 done
 
-# Layer Depth
-# for LAYERS in 5 6 7 8 9; do
-#     python3 main.py train $BASE_FLAGS --exp_name "abl_layers_${LAYERS}" --has_temporal_weights True --attn_heads 1 --num_layers $LAYERS --split False
-# done
+Layer Depth
+for LAYERS in 5 6 7 8 9; do
+    python3 main.py train $BASE_FLAGS --exp_name "abl_layers_${LAYERS}" --has_temporal_weights True --attn_heads 1 --num_layers $LAYERS --split False
+done
 
-# Exclude Groups
-# GROUPS=("leg_joints" "thorax_joints" "spine_joints")
-# for GROUP in "${GROUPS[@]}"; do
-#     python3 main.py train $BASE_FLAGS --exp_name "abl_excl_${GROUP}" --has_temporal_weights True --attn_heads 1 --num_layers 5 --split False --exclude_groups "['$GROUP']"
-# done
+Exclude Groups
+GROUPS=("leg_joints" "thorax_joints" "spine_joints")
+for GROUP in "${GROUPS[@]}"; do
+    python3 main.py train $BASE_FLAGS --exp_name "abl_excl_${GROUP}" --has_temporal_weights True --attn_heads 1 --num_layers 5 --split False --exclude_groups "['$GROUP']"
+done
 
-# # Split alone
-# SPLIT_1=4
-# SPLIT_2=2
-# SPLIT_RATIO=0.4
-# python3 main.py train $BASE_FLAGS --exp_name "abl_split_only" --has_temporal_weights True --attn_heads 1 --num_layers 7 --split True --split_1 $SPLIT_1 --split_2 $SPLIT_2 --split_ratio $SPLIT_RATIO
+# Split alone
+SPLIT_1=4
+SPLIT_2=2
+SPLIT_RATIO=0.4
+python3 main.py train $BASE_FLAGS --exp_name "abl_split_only" --has_temporal_weights True --attn_heads 1 --num_layers 7 --split True --split_1 $SPLIT_1 --split_2 $SPLIT_2 --split_ratio $SPLIT_RATIO
 
-# echo "=== Running Combined Ablations ==="
+echo "=== Running Combined Ablations ==="
 
-# # Combination 1: More Layers + More Heads
-# for LAYERS in 7 9; do
-#   for HEADS in 4 8; do
-#     python3 main.py train $BASE_FLAGS --exp_name "comb_deep_${LAYERS}_heads_${HEADS}" --has_temporal_weights True --attn_heads $HEADS --num_layers $LAYERS --split False
-#   done
-# done
+# Combination 1: More Layers + More Heads
+for LAYERS in 7 9; do
+  for HEADS in 4 8; do
+    python3 main.py train $BASE_FLAGS --exp_name "comb_deep_${LAYERS}_heads_${HEADS}" --has_temporal_weights True --attn_heads $HEADS --num_layers $LAYERS --split False
+  done
+done
 
-# # Combination 2: Temporal + Split + Moderate Attention
-# SPLIT_1=5
-# SPLIT_2=2
-# SPLIT_RATIO=0.5
-# python3 main.py train $BASE_FLAGS --exp_name "comb_temp_split_heads" --has_temporal_weights True --attn_heads 4 --num_layers 7 --split True --split_1 $SPLIT_1 --split_2 $SPLIT_2 --split_ratio $SPLIT_RATIO
+# Combination 2: Temporal + Split + Moderate Attention
+SPLIT_1=5
+SPLIT_2=2
+SPLIT_RATIO=0.5
+python3 main.py train $BASE_FLAGS --exp_name "comb_temp_split_heads" --has_temporal_weights True --attn_heads 4 --num_layers 7 --split True --split_1 $SPLIT_1 --split_2 $SPLIT_2 --split_ratio $SPLIT_RATIO
 
-# # Combination 3: No Temporal + Fewer Heads + Fewer Layers (baseline-lite)
-# python3 main.py train $BASE_FLAGS --exp_name "comb_lite_noTemp" --has_temporal_weights False --attn_heads 1 --num_layers 5 --split False
+# Combination 3: No Temporal + Fewer Heads + Fewer Layers (baseline-lite)
+python3 main.py train $BASE_FLAGS --exp_name "comb_lite_noTemp" --has_temporal_weights False --attn_heads 1 --num_layers 5 --split False
 
-# # Combination 4: Split + Exclusion
-# python3 main.py train $BASE_FLAGS --exp_name "comb_split_excl_thorax" --has_temporal_weights True --attn_heads 4 --num_layers 7 --split True --split_1 4 --split_2 2 --split_ratio 0.4 --exclude_groups "['thorax_joints']"
+# Combination 4: Split + Exclusion
+python3 main.py train $BASE_FLAGS --exp_name "comb_split_excl_thorax" --has_temporal_weights True --attn_heads 4 --num_layers 7 --split True --split_1 4 --split_2 2 --split_ratio 0.4 --exclude_groups "['thorax_joints']"
 
-# # Combination 5: Temporal Off + High Heads (stress test)
-# python3 main.py train $BASE_FLAGS --exp_name "comb_noTemp_highHeads" --has_temporal_weights False --attn_heads 8 --num_layers 6 --split False
+# Combination 5: Temporal Off + High Heads (stress test)
+python3 main.py train $BASE_FLAGS --exp_name "comb_noTemp_highHeads" --has_temporal_weights False --attn_heads 8 --num_layers 6 --split False
 
-# echo "=== All ablation jobs queued ==="
+echo "=== All ablation jobs queued ==="
