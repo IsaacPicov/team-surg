@@ -10,7 +10,7 @@ echo "=== Running One-Factor-at-a-Time Ablations ==="
 # done
 
 # Attention Heads
-for HEADS in 1 2 4 8; do
+for HEADS in 2 4 8; do
     python3 main.py train $BASE_FLAGS --exp_name "abl_heads_${HEADS}" --has_temporal_weights True --attn_heads $HEADS --num_layers 5 --split False
 done
 
