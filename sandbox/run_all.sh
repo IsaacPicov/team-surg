@@ -5,9 +5,9 @@ BASE_FLAGS="--devices 1 --num_classes 3 --accelerator gpu --gradient_clip_val 0.
 echo "=== Running One-Factor-at-a-Time Ablations ==="
 
 # Temporal Ablation
-for TEMPORAL in True False; do
-    python3 main.py train $BASE_FLAGS --exp_name "abl_temporal_${TEMPORAL}" --has_temporal_weights $TEMPORAL --attn_heads 1 --num_layers 5 --split False
-done
+# for TEMPORAL in True False; do
+#     python3 main.py train $BASE_FLAGS --exp_name "abl_temporal_${TEMPORAL}" --has_temporal_weights $TEMPORAL --attn_heads 1 --num_layers 5 --split False
+# done
 
 # Attention Heads
 for HEADS in 1 2 4 8; do
