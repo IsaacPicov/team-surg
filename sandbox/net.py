@@ -125,10 +125,10 @@ class GNNModel(nn.Module):
                 x = layer(x, edge_index)
             else:
                 x = layer(x)
-        x = self.pooling(x, batch)
+        x = self.pooling(x, batch) #type: ignore
         x = self.mlp_layer1(x)
         x=self.mlp_layer2(x)
-        return self.mlp_layer3(x) 
+        return self.mlp_layer3(x) #type: ignore
 
 class GATModel(nn.Module):
     def __init__(
@@ -198,13 +198,14 @@ class GATModel(nn.Module):
         else:
             for l_idx in range(num_layers - 1):
                 layers += [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=True),
+                    gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=True),
                     nn.ReLU(inplace=True),
                     nn.Dropout(dp_rate),
                 ]
+                in_channels = c_hidden
 
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=False),
+                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=False),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
             ]
@@ -349,16 +350,16 @@ class MlpMixer(nn.Module):
 
         self.init_weights(nlhb=nlhb)
 
-    @torch.jit.ignore
+    @torch.jit.ignore #type: ignore
     def init_weights(self, nlhb=False):
         head_bias = -math.log(self.num_classes) if nlhb else 0.
         named_apply(partial(_init_weights, head_bias=head_bias), module=self)  # depth-first
 
-    @torch.jit.ignore
+    @torch.jit.ignore #type: ignore
     def set_grad_checkpointing(self, enable=True):
         self.grad_checkpointing = enable
 
-    @torch.jit.ignore
+    @torch.jit.ignore #type: ignore
     def get_classifier(self):
         return self.head
 
@@ -417,7 +418,7 @@ def _init_weights(module: nn.Module, name: str, head_bias: float = 0., flax=Fals
         nn.init.ones_(module.weight)
         nn.init.zeros_(module.bias)
     elif hasattr(module, 'init_weights'):
-        module.init_weights()
+        module.init_weights() #type: ignore
 
 if __name__ == "__main__":
     print("Starting") 
