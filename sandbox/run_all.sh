@@ -12,7 +12,8 @@ echo "=== Running One-Factor-at-a-Time Ablations ==="
 # Attention Heads
 for HEADS in 2 4 8; do
     for LAYERS in 5, 9; do
-    python3 main.py train $BASE_FLAGS --exp_name "abl_heads_${HEADS} layers_${LAYERS}" --has_temporal_weights True --attn_heads $HEADS --num_layers $LAYERS --split False
+        python3 main.py train $BASE_FLAGS --exp_name "abl_heads_${HEADS} layers_${LAYERS}" --has_temporal_weights True --attn_heads $HEADS --num_layers $LAYERS --split False
+    done
 done
 
 # Layer Depth
