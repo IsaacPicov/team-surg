@@ -390,8 +390,7 @@ class GATTask(pl.LightningModule):
         self.layer_name = self.hparams.get('layer_name', 'GAT')
         self.dp_rate = self.hparams.get('dp_rate', 0.1)
         self.has_temporal_weights = self.hparams.get('has_temporal_weights', False)
-        self.num_MLP_layers = self.hparams.get("num_MLP_layers", 3)
-        
+        self.num_MLP_layers = self.hparams.get("num_MLP_layers", 3)      
         #Dataset kwargs
         self.num_frames = self.hparams.get("num_frames", 150)
         self.exclude_groups = self.hparams.get("exclude_groups", [])
@@ -401,6 +400,11 @@ class GATTask(pl.LightningModule):
         self.dataset_path = self.hparams.get('dataset_path', "")
         self.num_workers = self.hparams.get('num_workers', 4) 
         self.pin_memory = self.hparams.get('pin_memory', True)
+        self.has_distance_travelled = self.hparams.get('has_distance_traveled', True)
+        self.has_wrist_avg = self.hparams.get('has_wrist_avg', True)
+        self.has_elbow_avg = self.hparams.get("has)elbow_avg", True)
+        self.has_hand_wrist_distance = self.hparams.get('has_hand_wrist_distance', True)   
+        self.has_avg_stability = self.hparams.get('has_avg_stability', True)
         
         #Training kwargs
         self.model = GATModel(c_in=self.c_in, c_hidden=self.c_hidden, c_out=self.num_classes, 
@@ -539,14 +543,18 @@ class GATTask(pl.LightningModule):
             exclude_groups=self.exclude_groups,
             num_frames=self.num_frames,
             has_temporal_weights = self.has_temporal_weights,
+            has_distance_traveled=self.has_distance_travelled, 
+            has_avg_stability=self.has_avg_stability, 
+            has_elbow_avg=self.has_elbow_avg, 
+            has_wrist_avg=self.has_wrist_avg, 
+            has_hand_wrist_distance = self.has_hand_wrist_distance
             )
         return GeoDataLoader( 
             dataset=train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            pin_memory=self.pin_memory)
-        
+            pin_memory=self.pin_memory)   
     def test_dataloader(self):
         train_dataset = GNNDataset(
             dataset_path=self.dataset_path, 
@@ -554,6 +562,11 @@ class GATTask(pl.LightningModule):
             exclude_groups=self.exclude_groups,
             num_frames=self.num_frames,
             has_temporal_weights = self.has_temporal_weights,
+            has_distance_traveled=self.has_distance_travelled, 
+            has_avg_stability=self.has_avg_stability, 
+            has_elbow_avg=self.has_elbow_avg, 
+            has_wrist_avg=self.has_wrist_avg, 
+            has_hand_wrist_distance = self.has_hand_wrist_distance
             )
         return GeoDataLoader( 
             dataset=train_dataset,
@@ -569,6 +582,11 @@ class GATTask(pl.LightningModule):
             exclude_groups=self.exclude_groups,
             num_frames=self.num_frames,
             has_temporal_weights = self.has_temporal_weights,
+            has_distance_traveled=self.has_distance_travelled, 
+            has_avg_stability=self.has_avg_stability, 
+            has_elbow_avg=self.has_elbow_avg, 
+            has_wrist_avg=self.has_wrist_avg, 
+            has_hand_wrist_distance = self.has_hand_wrist_distance
             )
         return GeoDataLoader( 
             dataset=val_dataset,

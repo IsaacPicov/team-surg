@@ -50,9 +50,13 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           split = False, 
           split_1 = 5, 
           split_2 = 3,
-          split_ratio = 1/4
+          split_ratio = 1/4,
+          has_distance_traveled=True,
+          has_avg_stability=True,
+          has_elbow_avg=True,
+          has_wrist_avg=True,
+          has_hand_wrist_distance=True
           ):  
-   
    
     """
     Run Trainer 

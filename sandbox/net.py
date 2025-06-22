@@ -166,50 +166,23 @@ class GATModel(nn.Module):
         
         in_channels, out_channels = c_in, c_hidden
         layers = []
-        if split:
-            first_layers = int(num_layers * split_ratio)
-            second_layers = num_layers - first_layers
 
-            # First block (uses split_1 heads)
-            for l_idx in range(first_layers):
-                layers += [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels//split_1, heads=split_1, concat=True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-                in_channels = out_channels
-
-            # Second block (uses split_2 heads)
-            for l_idx in range(second_layers - 1):
-                layers += [ 
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels//split_2, heads=split_2, concat=True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-                in_channels = out_channels
-
-            # Final GAT layer with concat=False
+        for l_idx in range(num_layers - 1):
             layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=split_2, concat=False),
+                gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=True),
                 nn.ReLU(inplace=True),
                 nn.Dropout(dp_rate),
             ]
+            in_channels = c_hidden
 
-        else:
-            for l_idx in range(num_layers - 1):
-                layers += [
-                    gnn_layer(in_channels=in_channels, out_channels=out_channels//heads, heads=heads, concat=True),
-                    nn.ReLU(inplace=True),
-                    nn.Dropout(dp_rate),
-                ]
-                in_channels = c_hidden
-
-            layers += [
-                gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=False),
-                nn.ReLU(inplace=True),
-                nn.Dropout(dp_rate),
-            ]
+        layers += [
+            gnn_layer(in_channels=in_channels, out_channels=out_channels, heads=heads, concat=False),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dp_rate),
+        ]
             
+        self.project = nn.Linear(c_hidden+5, c_hidden, bias=False)
+        
         MLP_layers = []
         for l_idx in range(num_MLP_layers - 1):
             MLP_layers += [nn.Linear(c_hidden, c_hidden//2)]
@@ -246,7 +219,15 @@ class GATModel(nn.Module):
             else:
                 x = layer(x)
         x = self.pooling(x, batch) #type: ignore
+        x = torch.cat([x, batch.multimodal], dim=1)
         
+        #Adding 5 multimodal features to the dense vector, using linear layer to cast back to 128. 
+        #Other things to try, 
+        # 1.) Mess with model layers 
+        # 2.) Apply another non linear layer to dataset
+        
+        x = self.project(x) #This won't add much, still just linear 
+                
         for layer in self.MLP_layers:
             x = layer(x)
             
