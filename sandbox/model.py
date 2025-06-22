@@ -394,6 +394,8 @@ class GATTask(pl.LightningModule):
         #Dataset kwargs
         self.num_frames = self.hparams.get("num_frames", 150)
         self.exclude_groups = self.hparams.get("exclude_groups", [])
+        self.temporal_joint_group = self.hparams.get('temporal_joint_group', None)
+
         
         #Dataloader kwargs
         self.batch_size = self.hparams.get("batch_size", 32)
@@ -547,7 +549,8 @@ class GATTask(pl.LightningModule):
             has_avg_stability=self.has_avg_stability, 
             has_elbow_avg=self.has_elbow_avg, 
             has_wrist_avg=self.has_wrist_avg, 
-            has_hand_wrist_distance = self.has_hand_wrist_distance
+            has_hand_wrist_distance = self.has_hand_wrist_distance,
+            temporal_joint_group=self.temporal_joint_group
             )
         return GeoDataLoader( 
             dataset=train_dataset,
@@ -567,7 +570,8 @@ class GATTask(pl.LightningModule):
             has_avg_stability=self.has_avg_stability, 
             has_elbow_avg=self.has_elbow_avg, 
             has_wrist_avg=self.has_wrist_avg, 
-            has_hand_wrist_distance = self.has_hand_wrist_distance
+            has_hand_wrist_distance = self.has_hand_wrist_distance,
+            temporal_joint_group=self.temporal_joint_group
             )
         return GeoDataLoader( 
             dataset=train_dataset,
@@ -588,7 +592,8 @@ class GATTask(pl.LightningModule):
             has_avg_stability=self.has_avg_stability, 
             has_elbow_avg=self.has_elbow_avg, 
             has_wrist_avg=self.has_wrist_avg, 
-            has_hand_wrist_distance = self.has_hand_wrist_distance
+            has_hand_wrist_distance = self.has_hand_wrist_distance,
+            temporal_joint_group=self.temporal_joint_group
             )
         return GeoDataLoader( 
             dataset=val_dataset,
