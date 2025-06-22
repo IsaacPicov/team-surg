@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 main.py train --exp_name "has_distance_traveled ,has_avg_stability ,has_elbow_avg ,has_wrist_avg ,has_hand_wrist_distance ,exclude=["spine_joints"]" --exclude_groups '["spine_joints"]' --has_distance_traveled=True --has_avg_stability=True --has_elbow_avg=True --has_wrist_avg=True --has_hand_wrist_distance=True
+python3 main.py train --exp_name "has_distance_traveled,has_avg_stability ,has_elbow_avg ,has_wrist_avg ,has_hand_wrist_distance ,exclude=["spine_joints"]" --exclude_groups '["spine_joints"]' --has_distance_traveled=True --has_avg_stability=True --has_elbow_avg=True --has_wrist_avg=True --has_hand_wrist_distance=True
 python3 main.py train --exp_name "has_distance_traveled ,has_avg_stability ,has_elbow_avg ,has_wrist_avg ,exclude=["spine_joints"]" --exclude_groups '["spine_joints"]' --has_distance_traveled=True --has_avg_stability=True --has_elbow_avg=True --has_wrist_avg=True --has_hand_wrist_distance=False
 python3 main.py train --exp_name "has_distance_traveled ,has_avg_stability ,has_elbow_avg ,has_hand_wrist_distance ,exclude=["spine_joints"]" --exclude_groups '["spine_joints"]' --has_distance_traveled=True --has_avg_stability=True --has_elbow_avg=True --has_wrist_avg=False --has_hand_wrist_distance=True
 python3 main.py train --exp_name "has_distance_traveled ,has_avg_stability ,has_elbow_avg ,exclude=["spine_joints"]" --exclude_groups '["spine_joints"]' --has_distance_traveled=True --has_avg_stability=True --has_elbow_avg=True --has_wrist_avg=False --has_hand_wrist_distance=False

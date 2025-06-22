@@ -197,7 +197,7 @@ class GATModel(nn.Module):
         self.MLP_layers = nn.ModuleList(MLP_layers)
         self.pooling = geom_nn.global_mean_pool
 
-    def forward(self, x, edge_index, edge_attr = None, batch = None):
+    def forward(self, data):
         """Forward.
 
         Args:
@@ -206,6 +206,14 @@ class GATModel(nn.Module):
             edge_attr: list of edge weights 
 
         """
+        
+        x, edge_index, edge_attr, batch = (
+            data.x,
+            data.edge_index,
+            data.edge_attr,
+            data.batch,
+        )
+        
         if batch is None:
             batch = torch.zeros(x.size(0), dtype=torch.float32, device=x.device) #try bfloat16
             
@@ -219,7 +227,12 @@ class GATModel(nn.Module):
             else:
                 x = layer(x)
         x = self.pooling(x, batch) #type: ignore
-        x = torch.cat([x, batch.multimodal], dim=1)
+        
+        graphs = data.to_data_list()
+        # pull out each one's multimodal vector and stack
+        multi = torch.stack([g.multimodal for g in graphs], dim=0)
+        
+        x = torch.cat([x, multi], dim=1)
         
         #Adding 5 multimodal features to the dense vector, using linear layer to cast back to 128. 
         #Other things to try, 

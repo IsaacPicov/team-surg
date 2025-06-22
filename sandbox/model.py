@@ -412,8 +412,8 @@ class GATTask(pl.LightningModule):
                               attn_heads = self.attn_heads, num_MLP_layers = self.num_MLP_layers)
         self.loss = nn.CrossEntropyLoss()
         
-    def forward(self, x, edge_index, edge_attr=None, batch = None):
-       return self.model(x, edge_index, edge_attr, batch)
+    def forward(self, data):
+       return self.model(data)
    
     def training_step(self, batch, batch_nb):
         """
@@ -424,14 +424,14 @@ class GATTask(pl.LightningModule):
                 progress_bar: metrics to be logged to the progress bar
                               and metrics.csv
         """
-        logits = self.forward(batch.x, batch.edge_index,batch.edge_attr, batch.batch) #[num_graphs, num_classes]
+        logits = self.forward(batch) #[num_graphs, num_classes]
         loss = self.loss(logits, batch.y.long()) #[dim(y) == num_classes]
         self.log("train_loss", loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
     
     
     def validation_step(self, batch, batch_nb):
-        logits = self.forward(batch.x, batch.edge_index, batch.edge_attr, batch.batch) #[num_graphs, num_classes]
+        logits = self.forward(batch) #[num_graphs, num_classes]
         loss = self.loss(logits, batch.y.long()) #[dim(y) == num_classes]
         probs = torch.softmax(logits, dim=1)
         if not hasattr(self, "val_outputs"):
@@ -479,7 +479,7 @@ class GATTask(pl.LightningModule):
 
 
     def test_step(self, batch, batch_nb):
-        logits = self.forward(batch.x, batch.edge_index, batch.edge_attr, batch.batch) #[num_graphs, num_classes]
+        logits = self.forward(batch) #[num_graphs, num_classes]
         loss = self.loss(logits, batch.y.long()) #[dim(y) == num_classes]
         probs = torch.softmax(logits, dim=1)
         if not hasattr(self, "test_outputs"):
@@ -554,7 +554,8 @@ class GATTask(pl.LightningModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            pin_memory=self.pin_memory)   
+            pin_memory=self.pin_memory,
+            follow_batch=['multimodal'] )   
     def test_dataloader(self):
         train_dataset = GNNDataset(
             dataset_path=self.dataset_path, 
@@ -573,7 +574,8 @@ class GATTask(pl.LightningModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            pin_memory=self.pin_memory)
+            pin_memory=self.pin_memory,
+            follow_batch=['multimodal'] )
         
     def val_dataloader(self):
         val_dataset = GNNDataset(
@@ -593,7 +595,8 @@ class GATTask(pl.LightningModule):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
-            pin_memory=self.pin_memory)
+            pin_memory=self.pin_memory,
+            follow_batch=['multimodal'] )
     
 
 #HELPER FUNCTIONS 
