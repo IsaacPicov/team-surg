@@ -25,11 +25,13 @@ class GNNDataset(Dataset):
         has_wrist_avg: bool = True, 
         has_elbow_avg: bool = True, 
         has_avg_stability:bool = True, 
+        temporal_joint_group=None,
         has_hand_wrist_distance: bool = True
     ):
         super().__init__()
         
         self.dataset = read_pickle(dataset_path)[split]
+        self.temporal_joint_group = temporal_joint_group
         self.exclude_groups = exclude_groups
         self.num_frames = num_frames
         self.temporal_weights = has_temporal_weights
@@ -105,7 +107,7 @@ class GNNDataset(Dataset):
 
 
     @staticmethod
-    def build_weighted_edge_list(joint_list, spatial_edges, num_frames = 150):
+    def build_weighted_edge_list(joint_list, spatial_edges, num_frames = 150, temporal_joint_mask=None):
         joint_idx = {name: i for i, name in enumerate(joint_list)}
         N = len(joint_list)
         total_nodes = N * num_frames
@@ -126,11 +128,12 @@ class GNNDataset(Dataset):
             
             if t < num_frames - 1:
                 next_offset = (t + 1) * N
-                for i in range(N):
-                    rows += [offset + i, next_offset + i]
-                    cols += [next_offset + i, offset + i]
-                    add_weights = torch.tensor([[0,1], [0,1]])
-                    edge_weights = torch.cat([edge_weights, add_weights], dim=0)
+                for i, joint in enumerate(joint_list):
+                    if temporal_joint_mask is None or joint in temporal_joint_mask:
+                        rows += [offset + i, next_offset + i]
+                        cols += [next_offset + i, offset + i]
+                        add_weights = torch.tensor([[0,1], [0,1]])
+                        edge_weights = torch.cat([edge_weights, add_weights], dim=0)
                 
         return torch.tensor([rows, cols], dtype= torch.long), edge_weights
 
@@ -219,7 +222,11 @@ class GNNDataset(Dataset):
         frames = self.dataset[idx]
         filtered_joint_list = GNNDataset.get_filtered_joint_list(self.exclude_groups)
         filtered_edges = GNNDataset.filter_edges(filtered_joint_list)
-        edge_list, edge_features = GNNDataset.build_weighted_edge_list(filtered_joint_list, filtered_edges, self.num_frames)
+        temporal_mask = None
+        if self.temporal_joint_group:
+            from joints import JOINT_GROUPS
+            temporal_mask = JOINT_GROUPS[self.temporal_joint_group]
+        edge_list, edge_features = GNNDataset.build_weighted_edge_list(filtered_joint_list, filtered_edges, self.num_frames, temporal_joint_mask=temporal_mask)
         x = GNNDataset.build_node_list(self.exclude_groups, frames[0]) #numpy array
         y = torch.tensor(frames[-2], dtype=torch.long) #action label 
         multimodal = self.feature_engineering(frames[0], filtered_joint_list)
@@ -227,5 +234,7 @@ class GNNDataset(Dataset):
         return x, edge_list, edge_features, y, multimodal
     
     
+
+
 
 
