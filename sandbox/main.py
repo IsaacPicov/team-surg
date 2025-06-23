@@ -45,6 +45,7 @@ def train(save_dir=str(Path.home() / "Desktop" / "AlgoverseResearch" / "u" / "is
           layer_name = 'GAT', 
           num_frames = 150, 
           exclude_groups = [],
+          temporal_joint_group=None,
           num_workers = 4, 
           pin_memory= True,
           split = False, 
@@ -170,3 +171,4 @@ def read_pickle(path):
 if __name__ == "__main__":
     print("Started main function")
     fire.Fire()
+
